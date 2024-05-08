@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { Database } from "sqlite3";
 
 export interface DeviceSavingService {
-    findTotalDeviceSavings(deviceId: number, criteria: { fromDate?: Date, toDate?: Date }): Promise<{
+    findTotalDeviceSavings(deviceId: number, criteria?: { fromDate?: DateTime, toDate?: DateTime }): Promise<{
         periodCarbonSavings: number;
         periodFueldSavings: number;
     }>;
@@ -11,21 +11,20 @@ export interface DeviceSavingService {
 export class Sqlite3DeviceSavingService implements DeviceSavingService {
     constructor(private readonly db: Database) { }
 
-    async findTotalDeviceSavings(deviceId: number, criteria: { fromDate?: Date, toDate?: Date }) {
+    async findTotalDeviceSavings(deviceId: number, criteria?: { fromDate?: DateTime, toDate?: DateTime }) {
         return new Promise<{
             periodCarbonSavings: number;
             periodFueldSavings: number;
         }>((resolve, reject) => {
+            const fromDate = criteria?.fromDate ?? DateTime.fromMillis(0);
+            const toDate = criteria?.toDate ?? DateTime.now();
             this.db.serialize(() => {
                 this.db.prepare(
-                    `SELECT SUM(carbon_saved) currentPeriodCarbonSavings,
-                        SUM(fueld_saved) currentPeriodFueldSavings
+                    `SELECT SUM(carbon_saved) periodCarbonSavings,
+                        SUM(fueld_saved) periodFueldSavings
                     FROM device_saving
                     WHERE device_id = ? AND device_timestamp > ? AND device_timestamp <= ?`)
-                    .run(
-                        deviceId,
-                        DateTime.fromJSDate(criteria.fromDate ?? new Date(0)).plus({ minutes: 30 }).toISO(),
-                        DateTime.fromJSDate(criteria.toDate ?? new Date()).toISO())
+                    .run(deviceId, fromDate.toSQL(), toDate.toSQL())
                     .each<{
                         periodCarbonSavings: number;
                         periodFueldSavings: number;
