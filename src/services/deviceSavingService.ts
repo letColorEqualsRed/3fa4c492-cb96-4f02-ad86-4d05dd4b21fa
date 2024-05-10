@@ -23,8 +23,8 @@ export class Sqlite3DeviceSavingService implements DeviceSavingService {
                     `SELECT SUM(carbon_saved) periodCarbonSavings,
                         SUM(fueld_saved) periodFueldSavings
                     FROM device_saving
-                    WHERE device_id = ? AND device_timestamp > ? AND device_timestamp <= ?`)
-                    .run(deviceId, fromDate.toSQL(), toDate.toSQL())
+                    WHERE device_id = ? AND timestamp > ? AND timestamp <= ?`)
+                    .run(deviceId, fromDate.toMillis(), toDate.toMillis())
                     .each<{
                         periodCarbonSavings: number;
                         periodFueldSavings: number;

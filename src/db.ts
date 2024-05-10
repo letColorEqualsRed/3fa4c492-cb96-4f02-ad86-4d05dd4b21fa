@@ -7,30 +7,52 @@ export async function createSqliteDb(): Promise<Database> {
     return new Promise(async (resolve, reject) => {
         // Create sqlite3 database
         const db = new Database(":memory:");
-        const csv = await fs.promises.readFile("./data/device-saving.csv", "utf-8");
+        const savingsCsv = await fs.promises.readFile("./data/device-saving.csv", "utf-8");
+        const deviceCsv = await fs.promises.readFile("./data/devices.csv", "utf-8");
         db.serialize(() => {
+            db.run(`CREATE TABLE device (
+                id INTEGER PRIMARY KEY,
+                name VARCHAR(255),
+                timezone VARCHAR(255)
+            );`);
+
             db.run(`CREATE TABLE device_saving (
                 device_id INTEGER,
-                timestamp DATETIME,
-                device_timestamp DATETIME,
+                timestamp INTEGER,
                 carbon_saved DECIMAL(20, 16),
                 fueld_saved DECIMAL(20, 16)
             );`);
             console.log("Sqlite database created");
 
             // Seed with sample data
-            const results = parse<any>(csv, { header: true });
-            const statement = db.prepare(`INSERT INTO device_saving VALUES (?, ?, ?, ?, ?);`)
-            for (const row of results.data) {
-                statement.run(
-                    parseInt(row["device_id"]),
-                    DateTime.fromJSDate(new Date(row["timestamp"])).toSQL(),
-                    DateTime.fromJSDate(new Date(row["device_timestamp"])).toSQL(),
+            const deviceResults = parse<any>(deviceCsv, { header: true });
+            const savingResults = parse<any>(savingsCsv, { header: true });
+
+            const insertDevice = db.prepare(`INSERT INTO device VALUES (?, ?, ?);`)
+            const deviceTimezones: Record<number, string> = {};
+            let deviceId = 1;
+            for (const row of deviceResults.data) {
+                insertDevice.run(
+                    deviceId,
+                    row["name"],
+                    row["timezone"],
+                );
+                deviceTimezones[deviceId] = row["timezone"];
+                deviceId++;
+            }
+
+            const insertSaving = db.prepare(`INSERT INTO device_saving VALUES (?, ?, ?, ?);`)
+            console.log(DateTime.fromISO(savingResults.data[0]["device_timestamp"].replace("Z", ""), { zone: deviceTimezones[1] }))
+            for (const row of savingResults.data) {
+                const rowDeviceId = row["device_id"]
+                insertSaving.run(
+                    parseInt(rowDeviceId),
+                    DateTime.fromISO(row["device_timestamp"].replace("Z", ""), { zone: deviceTimezones[rowDeviceId] }).toMillis(),
                     parseFloat(row["carbon_saved"]),
                     parseFloat(row["fueld_saved"]),
                 )
             }
-            statement.finalize(() => {
+            insertSaving.finalize(() => {
                 console.log("Sqlite database seeded with sample data");
                 resolve(db);
             });
