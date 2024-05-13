@@ -2,8 +2,8 @@ import express from "express";
 
 import { Sqlite3DeviceService } from "./services/deviceService";
 import { Sqlite3DeviceSavingService } from "./services/deviceSavingService";
+import { deviceRoutes } from "./routes/deviceRoutes";
 import { deviceSavingRoutes } from "./routes/deviceSavingRoutes";
-import { downloadRoutes } from "./routes/downloadRoutes";
 import { createSqliteDb } from "./db";
 
 async function startApplication() {
@@ -17,8 +17,8 @@ async function startApplication() {
     app.locals.deviceSavingService = new Sqlite3DeviceSavingService(db);
 
     // Set up routes
-    app.use("/v1/device-saving", deviceSavingRoutes);
-    app.use("/v1/download", downloadRoutes);
+    app.use("/api/v1/device", deviceRoutes);
+    app.use("/api/v1/device-saving", deviceSavingRoutes);
 
     // Accept API requests
     app.listen(PORT, () => {
@@ -26,20 +26,24 @@ async function startApplication() {
 
         console.table([
             {
-                url: `http://localhost:${PORT}/v1/device-saving/1/summary`,
+                url: `http://localhost:${PORT}/api/v1/device-saving/1/summary`,
                 description: "Get savings data summary for device with id 1"
             },
             {
-                url: `http://localhost:${PORT}/v1/device-saving/1/history?fromDate=2023-02-01&toDate=2023-03-01`,
-                description: "Get savings data in Feb 2023 for device with id 1"
-            },
-            {
-                url: `http://localhost:${PORT}/v1/device-saving/1/history?fromDate=2023-02-01&toDate=2023-02-02`,
+                url: `http://localhost:${PORT}/api/v1/device-saving/1/history?fromDate=2023-02-01&toDate=2023-02-02`,
                 description: "Get savings data on Feb 01 2023 for device with id 1"
             },
             {
-                url: `http://localhost:${PORT}/v1/download/savings-calculations-guidelines.md`,
-                description: "Download carbon and diesel savings calculation guidelines"
+                url: `http://localhost:${PORT}/api/v1/device-saving/1/history?fromDate=2023-02-01&toDate=2023-02-02&timezone=UTC`,
+                description: "Query by UTC instead of device timezone"
+            },
+            {
+                url: `http://localhost:${PORT}/api/v1/device-saving/1/history?fromDate=2023-02-01&toDate=2023-02-30`,
+                description: "Invalid date format"
+            },
+            {
+                url: `http://localhost:${PORT}/api/v1/device-saving/100/history?fromDate=2023-02-01&toDate=2023-02-02`,
+                description: "Non-existent device"
             }
         ]);
     });

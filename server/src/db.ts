@@ -4,11 +4,11 @@ import { parse } from "papaparse";
 import { DateTime } from "luxon";
 
 export async function createSqliteDb(): Promise<Database> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         // Create sqlite3 database
         const db = new Database(":memory:");
-        const savingsCsv = await fs.promises.readFile("./data/device-saving.csv", "utf-8");
-        const deviceCsv = await fs.promises.readFile("./data/devices.csv", "utf-8");
+        const savingsCsv = fs.readFileSync("./data/device-saving.csv", "utf-8");
+        const deviceCsv = fs.readFileSync("./data/devices.csv", "utf-8");
         db.serialize(() => {
             db.run(`CREATE TABLE device (
                 id INTEGER PRIMARY KEY,
@@ -17,6 +17,7 @@ export async function createSqliteDb(): Promise<Database> {
             );`);
 
             db.run(`CREATE TABLE device_saving (
+                id INTEGER PRIMARY KEY,
                 device_id INTEGER,
                 timestamp INTEGER,
                 carbon_saved DECIMAL(20, 16),
@@ -41,16 +42,18 @@ export async function createSqliteDb(): Promise<Database> {
                 deviceId++;
             }
 
-            const insertSaving = db.prepare(`INSERT INTO device_saving VALUES (?, ?, ?, ?);`)
-            console.log(DateTime.fromISO(savingResults.data[0]["device_timestamp"].replace("Z", ""), { zone: deviceTimezones[1] }))
+            const insertSaving = db.prepare(`INSERT INTO device_saving VALUES (?, ?, ?, ?, ?);`)
+            let deviceSavingId = 1;
             for (const row of savingResults.data) {
                 const rowDeviceId = row["device_id"]
                 insertSaving.run(
+                    deviceSavingId,
                     parseInt(rowDeviceId),
-                    DateTime.fromISO(row["device_timestamp"].replace("Z", ""), { zone: deviceTimezones[rowDeviceId] }).toMillis(),
+                    DateTime.fromISO(row["device_timestamp"].replace("Z", ""), { zone: deviceTimezones[rowDeviceId] }).toUnixInteger(),
                     parseFloat(row["carbon_saved"]),
                     parseFloat(row["fueld_saved"]),
                 )
+                deviceSavingId++;
             }
             insertSaving.finalize(() => {
                 console.log("Sqlite database seeded with sample data");

@@ -24,8 +24,8 @@ export class Sqlite3DeviceSavingService implements DeviceSavingService {
                         SUM(fueld_saved) periodFueldSavings
                     FROM device_saving
                     WHERE device_id = ? AND timestamp > ? AND timestamp <= ?`)
-                    .run(deviceId, fromDate.toMillis(), toDate.toMillis())
-                    .each<{
+                    .run(deviceId, fromDate.toUnixInteger(), toDate.toUnixInteger())
+                    .all<{
                         periodCarbonSavings: number;
                         periodFueldSavings: number;
                     }>((err, res) => {
@@ -33,8 +33,8 @@ export class Sqlite3DeviceSavingService implements DeviceSavingService {
                             reject(err);
                         } else {
                             resolve({
-                                periodCarbonSavings: res.periodCarbonSavings ?? 0,
-                                periodFueldSavings: res.periodFueldSavings ?? 0,
+                                periodCarbonSavings: res[0]?.periodCarbonSavings ?? 0,
+                                periodFueldSavings: res[0]?.periodFueldSavings ?? 0,
                             });
                         }
                     });

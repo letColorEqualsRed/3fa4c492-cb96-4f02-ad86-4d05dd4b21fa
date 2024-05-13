@@ -27,10 +27,10 @@ While a real-world project would involve a lot of back-and-forth over definition
     - The "Savings Summary" section consisting of the top half of the page with the "Estimated carbon savings" and "Estimated diesel savings" sections.
     - The "Savings Graph" section consisting of an interactive graph showing the device's saving data and controls for zooming in and out.
     - To my knowledge, AMPD builds mobile generators for construction sites
-        - i.e. possibly network-constrained environments
+        - Application might need to work in network-constrained environments
+    - As a result, I have created separate API endpoints to serve the Summary and Graph sections as this allows us to use a more aggressive caching strategy for the Summary section
 - Database schema
     - Timestamps are stored in UNIX timestamp format. Time zones should be handled in application code.
-- Included a stub API endpoint for downloading the savings calculations guidelines for the sake of completeness.
 - Included a Dockerfile to test code in Linux environment.
 
 ## Limitations
