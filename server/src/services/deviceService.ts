@@ -13,7 +13,6 @@ export class Sqlite3DeviceService implements DeviceService {
             this.db.prepare("SELECT * FROM device WHERE id = ?")
                 .run(id)
                 .all<Device>((err, res) => {
-                    console.log("found " + res)
                     if (err) {
                         reject(err);
                     } else {

@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 
 import { Sqlite3DeviceService } from "./services/deviceService";
 import { Sqlite3DeviceSavingService } from "./services/deviceSavingService";
@@ -15,6 +16,8 @@ async function startApplication() {
     // Instantiate services and make available throughout application
     app.locals.deviceService = new Sqlite3DeviceService(db);
     app.locals.deviceSavingService = new Sqlite3DeviceSavingService(db);
+
+    app.use(cors())
 
     // Set up routes
     app.use("/api/v1/device", deviceRoutes);
