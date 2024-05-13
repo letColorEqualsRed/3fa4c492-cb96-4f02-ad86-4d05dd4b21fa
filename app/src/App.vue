@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, shallowRef } from 'vue';
+import { computed, onMounted, reactive, ref, shallowRef } from 'vue';
 import { DateTime, Interval } from 'luxon';
 import BarChart from './components/BarChart.vue';
 
@@ -9,21 +9,10 @@ let store: any | undefined = reactive({ summary: undefined, graph: undefined });
 let fromDate: Date | undefined;
 let toDate: Date | undefined;
 
-let dataset = {
+let dataset = reactive<any>({
   dimensions: ["period", "Carbon savings", "Diesel savings"],
-  source: [
-    {
-      period: "Sep 2023",
-      ["Carbon savings"]: 1,
-      ["Diesel savings"]: 2,
-    },
-    {
-      period: "Oct 2023",
-      ["Carbon savings"]: 3,
-      ["Diesel savings"]: 4,
-    },
-  ]
-}
+  source: []
+})
 
 const formatAsTonnes = (inKgs?: number) => inKgs === undefined ? "-" : (inKgs / 1000).toFixed(1);
 
@@ -36,7 +25,7 @@ const _updateGraph = async (fromDate: string, toDate?: string) => {
   const savingsDataByInterval = await Promise.all(
     Interval.fromDateTimes(fromDateTime, toDateTime)
       .divideEqually(12)
-      .map(interval => {
+      .map(async (interval) => {
         const fromDate = interval.start?.toFormat("yyyy-MM-dd");
         const toDate = interval.end?.toFormat("yyyy-MM-dd");
         const query = new URLSearchParams();
@@ -44,12 +33,19 @@ const _updateGraph = async (fromDate: string, toDate?: string) => {
         if (toDate) query.set("toDate", toDate);
 
         // Call device saving API for each sub period
-        return fetch("http://localhost:8080/api/v1/device-saving/1/history?" + query.toString())
+        const savings = await fetch("http://localhost:8080/api/v1/device-saving/1/history?" + query.toString())
           .then((res) => res.json())
+
+        return {
+          period: `${fromDate} - ${toDate}`,
+          "Carbon savings": savings.periodCarbonSavings,
+          "Diesel savings": savings.periodFueldSavings,
+        }
       }));
 
+  console.log(savingsDataByInterval);
   // Update dataset
-
+  dataset.source = savingsDataByInterval;
 }
 
 const showLast30daysOnGraph = async () => {
@@ -68,6 +64,8 @@ onMounted(() => {
     .then((dto) => {
       store.summary = dto
     });
+
+  showLastYearOnGraph()
 })
 
 const currentMonthCarbonSavings = computed(() => formatAsTonnes(store.summary?.currentMonthCarbonSavings))
