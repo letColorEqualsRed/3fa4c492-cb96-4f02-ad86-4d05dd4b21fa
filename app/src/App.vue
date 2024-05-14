@@ -77,10 +77,13 @@ onMounted(() => {
     .then((res) => res.json())
     .then((dto) => {
       if (!dto.success) {
-        summaryError.value = dto.reason
+        throw new Error(dto.reason)
       } else {
         summary.value = dto.data
       }
+    })
+    .catch(e => {
+      summaryError.value = e.message
     });
 
   showLastYearOnGraph()
