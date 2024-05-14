@@ -1,0 +1,1 @@
+docker run --name ampd-isaac -p 8080:8080 ampd-isaac:0.0.1 

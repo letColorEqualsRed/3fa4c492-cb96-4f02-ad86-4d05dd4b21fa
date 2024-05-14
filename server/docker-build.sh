@@ -1,0 +1,1 @@
+docker build . -t ampd-isaac:0.0.1

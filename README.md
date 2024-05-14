@@ -3,15 +3,28 @@
 ## System Requirements
 - Node v18.19.0
 - Yarn
+- Docker (if using Docker to run server)
 
 ## Build Steps
-- ```yarn```
-- ```yarn start:prod```
+- To run server:
+    - ```cd server```
+    - ```yarn```
+    - ```yarn start:prod```
+    - A table containing sample API calls will be printed to console once server is ready to accept incoming requests
+- To run server (using Docker)
+    - ```cd server```
+    - ```./docker-build.sh```
+    - ```./docker-run.sh```
+    - A table containing sample API calls will be printed to console once server is ready to accept incoming requests
+- To run sample UI
+    - ```cd app```
+    - ```yarn```
+    - ```yarn dev```
 
 ## Assumptions
 While a real-world project would involve a lot of back-and-forth over definitions, in the interest of time I have made certain assumptions and done my best to document them below.
 - devices.csv:
-    - timezone is the ISO TZ identifier of the device's timezone
+    - timezone is the IANA identifier of the device's timezone
 - device-saving.csv:
     - Each row represents the total amount of carbon emissions and diesel saved in a 30 minute period ending in device_timestamp
     - timestamp is the Hong Kong server time when the savings data is recorded
@@ -32,6 +45,3 @@ While a real-world project would involve a lot of back-and-forth over definition
 - Database schema
     - Timestamps are stored in UNIX timestamp format. Time zones should be handled in application code.
 - Included a Dockerfile to test code in Linux environment.
-
-## Limitations
-- 
