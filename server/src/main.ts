@@ -17,7 +17,7 @@ async function startApplication() {
     app.locals.deviceService = new Sqlite3DeviceService(db);
     app.locals.deviceSavingService = new Sqlite3DeviceSavingService(db);
 
-    app.use(cors())
+    app.use(cors());
 
     // Set up routes
     app.use("/api/v1/device", deviceRoutes);

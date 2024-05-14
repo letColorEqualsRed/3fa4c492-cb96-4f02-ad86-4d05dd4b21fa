@@ -41,12 +41,15 @@ export const deviceSavingRoutes = express.Router()
                 { fromDate, toDate },
             );
 
-            const response: GetDeviceSavingByPeriodResponseDto = {
+            const data: GetDeviceSavingByPeriodResponseDto = {
                 periodCarbonSavings: savings.periodCarbonSavings,
                 periodFueldSavings: savings.periodFueldSavings,
             };
 
-            res.json(response);
+            res.json({
+                success: true,
+                data: data
+            });
         } catch (e) {
             console.error(e);
             res.json({
@@ -79,14 +82,17 @@ export const deviceSavingRoutes = express.Router()
 
             const lifetimeSavings = await req.app.locals.deviceSavingService.findTotalDeviceSavings(deviceId);
 
-            const response: GetDeviceSavingSummaryResponseDto = {
+            const data: GetDeviceSavingSummaryResponseDto = {
                 currentMonthCarbonSavings: currentMonthSavings.periodCarbonSavings,
                 currentMonthFueldSavings: currentMonthSavings.periodFueldSavings,
                 lifetimeCarbonSavings: lifetimeSavings.periodCarbonSavings,
                 lifetimeFueldSavings: lifetimeSavings.periodFueldSavings,
             };
 
-            res.json(response);
+            res.json({
+                success: true,
+                data: data
+            });
         } catch (e) {
             console.error(e);
             res.json({

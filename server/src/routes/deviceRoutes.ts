@@ -12,13 +12,16 @@ export const deviceRoutes = express.Router()
                 throw new Error("Cannot find device with id " + deviceId);
             }
 
-            const response: GetDeviceResponseDto = {
+            const data: GetDeviceResponseDto = {
                 id: device.id,
                 name: device.name,
                 timezone: device.timezone,
             };
 
-            res.json(response);
+            res.json({
+                success: true,
+                data: data
+            });
         } catch (e) {
             if (e instanceof Error) {
                 res.json({
