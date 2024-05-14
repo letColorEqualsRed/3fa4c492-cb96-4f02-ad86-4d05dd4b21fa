@@ -105,6 +105,7 @@ const lifetimeFueldSavings = computed(() => summary.value.lifetimeFueldSavings?.
   <main class="col">
     <p class="text-primary-500 bold">Download general guidelines on the estimated carbon & diesel savings calculations
     </p>
+    <div class="text-red-500 bold">{{ summaryError }}</div>
     <hr />
     <h2>Estimated carbon savings</h2>
     <p class="text-gray-500">1 Tonne = 1,000 kg</p>
